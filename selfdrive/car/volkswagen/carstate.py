@@ -272,6 +272,25 @@ class CarState(CarStateBase):
     # Additional safety checks performed in CarInterface.
     ret.espDisabled = bool(pt_cp.vl["Bremse_1"]["ESP_Passiv_getastet"])
 
+    # Driving personalities function
+    if frogpilot_variables.personalities_via_wheel and ret.cruiseState.available:
+      # Sync with the onroad UI button
+      if self.fpf.personality_changed_via_ui:
+        self.personality_profile = self.fpf.current_personality
+        self.previous_personality_profile = self.personality_profile
+        self.fpf.reset_personality_changed_param()
+
+      # Change personality upon steering wheel button press
+      distance_button = pt_cp.vl["GRA_Neu"]["GRA_Zeitluecke"]
+
+      if distance_button and not self.distance_previously_pressed:
+        self.personality_profile = (self.previous_personality_profile + 2) % 3
+      self.distance_previously_pressed = distance_button
+
+      if self.personality_profile != self.previous_personality_profile:
+        self.fpf.distance_button_function(self.personality_profile)
+        self.previous_personality_profile = self.personality_profile
+
     return ret
 
   @staticmethod
