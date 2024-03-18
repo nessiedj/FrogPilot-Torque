@@ -195,6 +195,8 @@ class CarState(CarStateBase):
         distance_pressed = cp_acc.vl["ACC_CONTROL"]["DISTANCE"]
       else:
         distance_pressed = cp.vl["SDSU"]["FD_BUTTON"]
+    else:
+      distance_pressed = False
 
     # Switch the current state of Experimental Mode if the LKAS button is double pressed
     if frogpilot_variables.experimental_mode_via_lkas and ret.cruiseState.available and self.CP.carFingerprint != CAR.PRIUS_V:
