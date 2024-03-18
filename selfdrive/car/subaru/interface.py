@@ -34,6 +34,11 @@ class CarInterface(CarInterfaceBase):
       if candidate in GLOBAL_GEN2:
         ret.safetyConfigs[0].safetyParam |= Panda.FLAG_SUBARU_GEN2
 
+    if candidate not in (GLOBAL_GEN2 | HYBRID_CARS):
+      ret.autoResumeSng = True
+      ret.flags |= SubaruFlags.SUBARU_SNG.value
+      ret.safetyConfigs[0].safetyParam |= Panda.FLAG_SUBARU_SNG
+
     ret.steerLimitTimer = 0.4
     ret.steerActuatorDelay = 0.1
 
