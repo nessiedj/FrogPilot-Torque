@@ -185,16 +185,16 @@ class CarState(CarStateBase):
     # if openpilot does not control longitudinal, in this case, assume 0x343 is on bus0
     # 1) the car is no longer sending standstill
     # 2) the car is still in standstill
-    if not self.CP.openpilotLongitudinalControl:
+    if not self.CP.openpilotLongitudinalControl and self.CP.carFingerprint not in (TSS2_CAR, UNSUPPORTED_DSU_CAR):
       self.stock_resume_ready = cp.vl["ACC_CONTROL"]["RELEASE_STANDSTILL"] == 1
 
     # FrogPilot functions
     if self.CP.carFingerprint in (TSS2_CAR - RADAR_ACC_CAR) or (self.CP.flags & ToyotaFlags.SMART_DSU and not self.CP.flags & ToyotaFlags.RADAR_CAN_FILTER):
-      # distance button is wired to the ACC module (camera or radar)
-      if self.CP.carFingerprint in (TSS2_CAR - RADAR_ACC_CAR):
-        distance_pressed = cp_acc.vl["ACC_CONTROL"]["DISTANCE"]
-      else:
+      if self.CP.flags & ToyotaFlags.SMART_DSU:
         distance_pressed = cp.vl["SDSU"]["FD_BUTTON"]
+      elif self.CP.carFingerprint not in RADAR_ACC_CAR:
+        # KRKeegan - Add support for toyota distance button
+        distance_pressed = cp_acc.vl["ACC_CONTROL"]["DISTANCE"]
 
     # Switch the current state of Experimental Mode if the LKAS button is double pressed
     if frogpilot_variables.experimental_mode_via_lkas and ret.cruiseState.available and self.CP.carFingerprint != CAR.PRIUS_V:
@@ -330,7 +330,7 @@ class CarState(CarStateBase):
     if CP.enableBsm:
       messages.append(("BSM", 1))
 
-    if not CP.openpilotLongitudinalControl or (CP.carFingerprint in RADAR_ACC_CAR and not CP.flags & ToyotaFlags.DISABLE_RADAR.value):
+    if CP.carFingerprint in RADAR_ACC_CAR and not CP.flags & ToyotaFlags.DISABLE_RADAR.value:
       if not CP.flags & ToyotaFlags.SMART_DSU.value:
         messages += [
           ("ACC_CONTROL", 33),
